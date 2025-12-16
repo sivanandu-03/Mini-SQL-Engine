@@ -21,8 +21,6 @@ This engine supports a limited subset of SQL:
   - `COUNT(*)`
   - `COUNT(column_name)`
 
----
-
 ## Features Not Supported
 The following SQL features are **intentionally not implemented**:
 
@@ -37,94 +35,88 @@ The following SQL features are **intentionally not implemented**:
 ---
 
 ## Project Structure
+```text
 Mini-SQL-Engine/
 │
-├── cli.py # Command-line interface (entry point)
-├── parser.py # SQL parsing logic
-├── engine.py # Query execution logic
-├── storage.py # CSV loading logic
-├── students_marks_wide.csv # Sample dataset (10 students)
+├── cli.py                   # Command-line interface (entry point)
+├── parser.py                # SQL parsing logic
+├── engine.py                # Query execution logic
+├── storage.py               # CSV loading logic
+├── students_marks_wide.csv  # Sample dataset (10 students)
 └── README.md
+Sample Dataset
+The file students_marks_wide.csv contains data of 10 students, where:
 
-yaml
-Copy code
+Each student occupies one row
 
----
+Each row contains marks for 5 subjects
 
-## Sample Dataset
-The file `students_marks_wide.csv` contains data of **10 students**, where:
+Columns
+id
 
-- Each student occupies **one row**
-- Each row contains marks for **5 subjects**
+name
 
-### Columns
-- `id`
-- `name`
-- `maths`
-- `science`
-- `english`
-- `social`
-- `computer`
+maths
 
----
+science
 
-## How to Run the Application
+english
 
-### Step 1: Prerequisites
-Ensure Python is installed.
+social
+
+computer
+
+How to Run the Application
+Step 1: Prerequisites
+Ensure Python is installed (Python 3.8 or higher is recommended).
 
 Check Python version:
-```bash
-python --version
-Python 3.8 or higher is recommended.
 
+Bash
+
+python --version
 Step 2: Clone the Repository
-bash
-Copy code
-git clone https://github.com/sivanandu-03/Mini-SQL-Engine
+Bash
+
+git clone [https://github.com/sivanandu-03/Mini-SQL-Engine](https://github.com/sivanandu-03/Mini-SQL-Engine)
 cd Mini-SQL-Engine
 Step 3: Run the Application
-bash
-Copy code
+Bash
+
 python cli.py
 Step 4: Load the CSV File
 When prompted:
 
-text
-Copy code
+Plaintext
+
 Enter CSV file name:
 Enter:
 
-text
-Copy code
+Plaintext
+
 students_marks_wide.csv
 Step 5: Execute SQL Queries
 You will see the SQL prompt:
 
-text
-Copy code
+Plaintext
+
 sql>
 Example Queries
-sql
-Copy code
+
+SQL
+
 SELECT * FROM students_marks_wide;
-sql
-Copy code
 SELECT name, maths FROM students_marks_wide WHERE maths > 80;
-sql
-Copy code
 SELECT COUNT(*) FROM students_marks_wide;
-sql
-Copy code
 SELECT COUNT(science) FROM students_marks_wide;
 Step 6: Exit the Application
-text
-Copy code
+Plaintext
+
 exit
 or
 
-text
-Copy code
+Plaintext
+
 quit
 Error Handling
 The engine provides clear error messages for:
@@ -139,14 +131,15 @@ Incorrect WHERE clause
 
 Missing CSV file
 
-Example
-text
-Copy code
+Example:
+
+Plaintext
+
 Error: Column 'salary' does not exist
 Implementation Details
-Data is stored in memory as a list of dictionaries
+Storage: Data is stored in memory as a list of dictionaries.
 
-SQL parsing is done using basic string operations and regular expressions
+Parsing: SQL parsing is done using basic string operations and regular expressions.
 
 Query execution flow:
 
@@ -158,24 +151,24 @@ Apply COUNT aggregation (if used)
 
 Apply SELECT projection
 
-A simple REPL (Read–Eval–Print Loop) is used for interaction
+Interface: A simple REPL (Read–Eval–Print Loop) is used for interaction.
 
 Limitations
-Only one table (CSV file) is supported
+Only one table (CSV file) is supported.
 
-Only one WHERE condition is allowed
+Only one WHERE condition is allowed.
 
-No advanced SQL functionality
+No advanced SQL functionality.
 
 These limitations are intentional and aligned with beginner-level task requirements.
 
 Learning Outcomes
-Understanding how SQL queries are parsed internally
+Understanding how SQL queries are parsed internally.
 
-Implementing in-memory data processing
+Implementing in-memory data processing.
 
-Writing a simple query execution engine
+Writing a simple query execution engine.
 
-Building a CLI-based Python application
+Building a CLI-based Python application.
 
-Handling user input and errors gracefully
+Handling user input and errors gracefully.
