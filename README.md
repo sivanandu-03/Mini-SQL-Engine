@@ -82,7 +82,7 @@ python --version
 ### Step 2: Clone the Repository
 
 ```bash
-git clone [https://github.com/sivanandu-03/Mini-SQL-Engine](https://github.com/sivanandu-03/Mini-SQL-Engine)
+git clone https://github.com/sivanandu-03/Mini-SQL-Engine
 cd Mini-SQL-Engine
 ```
 
