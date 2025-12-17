@@ -1,57 +1,65 @@
-import re
-
 def parse_sql(query):
+    """
+    Parses a simplified SQL query.
+    Supports SELECT, FROM, WHERE, and COUNT.
+    """
+
     query = query.strip().rstrip(";")
+    tokens = query.lower().split()
 
-    query_upper = query.upper()
+    if not query.lower().startswith("select"):
+        raise ValueError("Syntax error: Query must start with SELECT")
 
-    if not query_upper.startswith("SELECT"):
-        raise ValueError("Only SELECT queries are supported")
+    if "from" not in tokens:
+        raise ValueError("Syntax error: FROM clause missing")
 
-    parsed = {}
+    select_part = query[query.lower().find("select") + 6: query.lower().find("from")].strip()
+    from_part = query[query.lower().find("from") + 4:].strip()
 
-    # -------- SELECT PART --------
-    select_match = re.search(r"SELECT\s+(.*?)\s+FROM", query_upper)
-    if not select_match:
-        raise ValueError("Invalid SELECT syntax")
+    where_clause = None
+    if "where" in from_part.lower():
+        from_part, where_part = from_part.lower().split("where", 1)
+        where_clause = where_part.strip()
 
-    select_part = select_match.group(1).strip()
+    table_name = from_part.strip()
 
-    if select_part.startswith("COUNT"):
-        inside = select_part[6:-1].strip()
-        parsed["select"] = {"count": inside.lower()}
-    elif select_part == "*":
-        parsed["select"] = "*"
-    else:
-        parsed["select"] = [c.strip().lower() for c in select_part.split(",")]
-
-    # -------- FROM PART --------
-    from_match = re.search(r"FROM\s+(\w+)", query_upper)
-    if not from_match:
-        raise ValueError("Invalid FROM clause")
-
-    parsed["from"] = from_match.group(1).lower()
-
-    # -------- WHERE PART --------
-    where_match = re.search(r"WHERE\s+(.*)", query, re.IGNORECASE)
-    if where_match:
-        condition = where_match.group(1).strip()
-        match = re.match(r"(\w+)\s*(=|!=|>=|<=|>|<)\s*(.+)", condition)
-        if not match:
-            raise ValueError("Invalid WHERE clause")
-
-        col, op, val = match.groups()
-        val = val.strip().strip("'\"")
-
-        if val.isdigit():
-            val = int(val)
-
-        parsed["where"] = {
-            "column": col.lower(),
-            "operator": op,
-            "value": val
+    # Handle COUNT
+    if select_part.lower().startswith("count"):
+        col = select_part[select_part.find("(") + 1: select_part.find(")")].strip()
+        return {
+            "type": "count",
+            "column": col,
+            "table": table_name,
+            "where": parse_where(where_clause) if where_clause else None
         }
-    else:
-        parsed["where"] = None
 
-    return parsed
+    # Handle SELECT columns
+    if select_part == "*":
+        columns = ["*"]
+    else:
+        columns = [c.strip() for c in select_part.split(",")]
+
+    return {
+        "type": "select",
+        "columns": columns,
+        "table": table_name,
+        "where": parse_where(where_clause) if where_clause else None
+    }
+
+
+def parse_where(where_str):
+    """
+    Parses a single WHERE condition.
+    """
+    operators = ["<=", ">=", "!=", "=", "<", ">"]
+
+    for op in operators:
+        if op in where_str:
+            col, val = where_str.split(op, 1)
+            return {
+                "column": col.strip(),
+                "operator": op,
+                "value": val.strip().strip("'")
+            }
+
+    raise ValueError("Syntax error: Invalid WHERE condition")

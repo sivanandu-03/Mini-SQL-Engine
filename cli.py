@@ -1,11 +1,12 @@
-from storage import load_csv
 from parser import parse_sql
 from engine import execute_query
 
-def print_result(result):
+
+def print_table(result):
+    """
+    Prints query results in a table format.
+    """
     if isinstance(result, int):
-        print("\nCOUNT")
-        print("-----")
         print(result)
         return
 
@@ -14,28 +15,45 @@ def print_result(result):
         return
 
     headers = result[0].keys()
-    print("\t".join(headers))
-    for row in result:
-        print("\t".join(row.values()))
+    rows = [list(row.values()) for row in result]
+
+    # Calculate column widths
+    col_widths = [
+        max(len(str(item)) for item in [header] + [row[i] for row in rows])
+        for i, header in enumerate(headers)
+    ]
+
+    # Print header
+    header_row = " | ".join(
+        header.ljust(col_widths[i]) for i, header in enumerate(headers)
+    )
+    separator = "-+-".join("-" * col_widths[i] for i in range(len(headers)))
+
+    print(header_row)
+    print(separator)
+
+    # Print rows
+    for row in rows:
+        print(" | ".join(str(row[i]).ljust(col_widths[i]) for i in range(len(row))))
 
 
 def main():
-    filename = input("Enter CSV file name: ")
-    data = load_csv(filename)
+    print("Mini SQL Engine")
+    print("Type 'exit' or 'quit' to leave")
 
-    print("Mini SQL Engine (type 'exit' to quit)")
     while True:
+        query = input("sql> ").strip()
+
+        if query.lower() in ("exit", "quit"):
+            print("Exiting...")
+            break
+
         try:
-            query = input("sql> ")
-            if query.lower() in ("exit", "quit"):
-                break
-
             parsed = parse_sql(query)
-            result = execute_query(data, parsed)
-            print_result(result)
-
+            result = execute_query(parsed)
+            print_table(result)
         except Exception as e:
-            print("Error:", e)
+            print(f"Error: {e}")
 
 
 if __name__ == "__main__":

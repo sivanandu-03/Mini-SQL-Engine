@@ -1,58 +1,76 @@
-def apply_where(rows, where):
-    if not where:
-        return rows
+from storage import load_csv
 
-    col, op, val = where.values()
+
+def execute_query(parsed_query):
+    rows = load_csv(parsed_query["table"] + ".csv")
+
+    if parsed_query["where"]:
+        rows = apply_where(rows, parsed_query["where"])
+
+    if parsed_query["type"] == "count":
+        return execute_count(rows, parsed_query["column"])
+
+    return execute_select(rows, parsed_query["columns"])
+
+
+def apply_where(rows, where):
+    col = where["column"]
+    op = where["operator"]
+    val = where["value"]
+
+    if col not in rows[0]:
+        raise ValueError(f"Column '{col}' does not exist")
+
     result = []
 
     for row in rows:
-        if col not in row:
-            raise ValueError(f"Column '{col}' does not exist")
-
         cell = row[col]
-        try:
-            cell = int(cell)
-        except:
-            pass
 
-        if (
-            (op == "=" and cell == val) or
-            (op == "!=" and cell != val) or
-            (op == ">" and cell > val) or
-            (op == "<" and cell < val) or
-            (op == ">=" and cell >= val) or
-            (op == "<=" and cell <= val)
-        ):
+        try:
+            cell_val = float(cell)
+            val_cmp = float(val)
+        except ValueError:
+            cell_val = cell
+            val_cmp = val
+
+        if compare(cell_val, val_cmp, op):
             result.append(row)
 
     return result
 
 
-def apply_select(rows, select):
-    if select == "*":
+def compare(a, b, op):
+    if op == "=":
+        return a == b
+    if op == "!=":
+        return a != b
+    if op == ">":
+        return a > b
+    if op == "<":
+        return a < b
+    if op == ">=":
+        return a >= b
+    if op == "<=":
+        return a <= b
+    return False
+
+
+def execute_select(rows, columns):
+    if columns == ["*"]:
         return rows
 
-    output = []
-    for row in rows:
-        projected = {}
-        for col in select:
-            if col not in row:
-                raise ValueError(f"Column '{col}' does not exist")
-            projected[col] = row[col]
-        output.append(projected)
-    return output
+    for col in columns:
+        if col not in rows[0]:
+            raise ValueError(f"Column '{col}' does not exist")
+
+    return [{col: row[col] for col in columns} for row in rows]
 
 
-def apply_count(rows, target):
-    if target == "*":
+def execute_count(rows, column):
+    if column == "*":
         return len(rows)
-    return sum(1 for r in rows if r.get(target))
 
+    if column not in rows[0]:
+        raise ValueError(f"Column '{column}' does not exist for COUNT")
 
-def execute_query(data, parsed):
-    rows = apply_where(data, parsed["where"])
-
-    if isinstance(parsed["select"], dict):
-        return apply_count(rows, parsed["select"]["count"])
-
-    return apply_select(rows, parsed["select"])
+    return sum(1 for row in rows if row[column] not in ("", None))

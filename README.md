@@ -139,19 +139,19 @@ quit
 
 ## Error Handling
 
-The engine provides clear error messages for:
+The engine gracefully handles invalid queries without crashing.
 
-  - Invalid SQL syntax
-  - Unsupported SQL commands
-  - Non-existent columns
-  - Incorrect WHERE clause
-  - Missing CSV file
+Examples:
 
-**Example:**
+SELECT unknown FROM students;
+→ Error: Column 'unknown' does not exist
 
-```text
-Error: Column 'salary' does not exist
-```
+SELECT * students;
+→ Error: Syntax error: FROM clause missing
+
+SELECT * FROM students WHERE age > 'abc';
+→ Error: Invalid numeric value in WHERE clause
+
 
 -----
 
